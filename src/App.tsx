@@ -1,26 +1,39 @@
-import { useState } from 'react';
-import { AlertTriangle, Database, Smartphone, CheckCircle } from 'lucide-react';
-
-const mockConflicts = [
-  {
-    id: 'crdt-err-001',
-    patientName: 'Fatima S.',
-    patientId: 'PT-8842',
-    field: 'Severe Allergies',
-    localValue: 'Penicillin (Anaphylaxis Risk)',
-    remoteValue: 'None Known',
-    localTimestamp: '2026-04-05T14:30:00Z',
-    remoteTimestamp: '2026-04-05T09:15:00Z',
-  }
-];
+import { useEffect, useState } from 'react'
+import { AlertTriangle, Database, Smartphone, CheckCircle } from 'lucide-react'
+import { initDB, type ConflictDoc } from './db'
+import type { RxDocument } from 'rxdb'
 
 export default function App() {
-  const [conflicts, setConflicts] = useState(mockConflicts);
+  const [conflicts, setConflicts] = useState<ConflictDoc[]>([])
+  const [db, setDb] = useState<Awaited<ReturnType<typeof initDB>> | null>(null)
 
-  const resolveConflict = (id: string, resolution: 'local' | 'remote') => {
-    console.log(`Resolved ${id} using ${resolution} data.`);
-    setConflicts(conflicts.filter(c => c.id !== id));
-  };
+  useEffect(() => {
+    let sub: { unsubscribe: () => void } | undefined
+    let cancelled = false
+
+    void (async () => {
+      const database = await initDB()
+      if (cancelled) return
+      setDb(database)
+      sub = database.conflicts.find().$.subscribe(
+        (docs: RxDocument<ConflictDoc>[]) => {
+          setConflicts(docs.map((doc) => doc.toJSON() as ConflictDoc))
+        },
+      )
+    })()
+
+    return () => {
+      cancelled = true
+      sub?.unsubscribe()
+    }
+  }, [])
+
+  const resolveConflict = async (id: string, resolution: 'local' | 'remote') => {
+    if (!db) return
+    console.log(`Resolved ${id} using ${resolution} data.`)
+    const query = db.conflicts.findOne({ selector: { id } })
+    await query.remove()
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
@@ -84,5 +97,5 @@ export default function App() {
         )}
       </main>
     </div>
-  );
+  )
 }
