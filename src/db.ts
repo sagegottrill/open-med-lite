@@ -24,6 +24,11 @@ export interface ConflictDoc {
   remoteTimestamp: string
 }
 
+/** One row: app has finished first-time setup (demo seed decision is done forever). */
+export interface MetaDoc {
+  id: string
+}
+
 const conflictSchema: RxJsonSchema<ConflictDoc> = {
   title: 'conflict schema',
   version: 0,
@@ -43,37 +48,58 @@ const conflictSchema: RxJsonSchema<ConflictDoc> = {
   required: ['id', 'patientName', 'field', 'localValue', 'remoteValue'],
 }
 
-type ConflictCollections = {
-  conflicts: RxCollection<ConflictDoc>
+const metaSchema: RxJsonSchema<MetaDoc> = {
+  title: 'app meta',
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string', maxLength: 100 },
+  },
+  required: ['id'],
 }
 
-let dbPromise: Promise<RxDatabase<ConflictCollections>> | null = null
+type AppCollections = {
+  conflicts: RxCollection<ConflictDoc>
+  meta: RxCollection<MetaDoc>
+}
 
-export const initDB = async (): Promise<RxDatabase<ConflictCollections>> => {
+const DEMO_CONFLICT_ID = 'crdt-err-001'
+const BOOTSTRAP_META_ID = 'bootstrap'
+
+let dbPromise: Promise<RxDatabase<AppCollections>> | null = null
+
+export const initDB = async (): Promise<RxDatabase<AppCollections>> => {
   if (!dbPromise) {
-    dbPromise = createRxDatabase<ConflictCollections>({
+    dbPromise = createRxDatabase<AppCollections>({
       name: 'openmeddb',
       storage: getRxStoragePouch('idb'),
       ignoreDuplicate: true,
     }).then(async (db) => {
       await db.addCollections({
         conflicts: { schema: conflictSchema },
+        meta: { schema: metaSchema },
       })
 
-      // Seed the database with our specific medical edge-case if empty
-      const existing = await db.conflicts.find().exec()
-      if (existing.length === 0) {
-        await db.conflicts.insert({
-          id: 'crdt-err-001',
-          patientName: 'Fatima S.',
-          patientId: 'PT-8842',
-          field: 'Severe Allergies',
-          localValue: 'Penicillin (Anaphylaxis Risk)',
-          remoteValue: 'None Known',
-          localTimestamp: '2026-04-05T14:30:00Z',
-          remoteTimestamp: '2026-04-05T09:15:00Z',
-        })
+      const boot = await db.meta.findOne(BOOTSTRAP_META_ID).exec()
+      if (!boot) {
+        const hasDemo = await db.conflicts.findOne(DEMO_CONFLICT_ID).exec()
+        if (!hasDemo) {
+          await db.conflicts.insert({
+            id: DEMO_CONFLICT_ID,
+            patientName: 'Fatima S.',
+            patientId: 'PT-8842',
+            field: 'Severe Allergies',
+            localValue: 'Penicillin (Anaphylaxis Risk)',
+            remoteValue: 'None Known',
+            localTimestamp: '2026-04-05T14:30:00Z',
+            remoteTimestamp: '2026-04-05T09:15:00Z',
+          })
+        }
+        await db.meta.insert({ id: BOOTSTRAP_META_ID })
       }
+
       return db
     })
   }
