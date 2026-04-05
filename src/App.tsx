@@ -42,18 +42,33 @@ export default function App() {
           <h1 className="text-3xl font-bold tracking-tight">OpenMed Lite</h1>
           <p className="text-slate-500 mt-1">Offline-First Clinical Records</p>
         </div>
-        <div className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-medium text-sm">
-          <AlertTriangle size={18} />
-          <span>{conflicts.length} Pending Sync Conflicts</span>
-        </div>
+        {conflicts.length === 0 ? (
+          <div className="flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm">
+            <CheckCircle size={18} aria-hidden />
+            <span>Sync queue clear</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-medium text-sm">
+            <AlertTriangle size={18} aria-hidden />
+            <span>{conflicts.length} Pending Sync Conflicts</span>
+          </div>
+        )}
       </header>
 
       <main className="max-w-5xl mx-auto">
         <h2 className="text-xl font-semibold mb-6">Human-in-the-Loop Resolution Desk</h2>
         {conflicts.length === 0 ? (
-          <div className="bg-green-50 border border-green-200 text-green-800 p-8 rounded-xl flex flex-col items-center">
-            <CheckCircle size={48} className="mb-4 text-green-500" />
+          <div className="bg-green-50 border border-green-200 text-green-800 p-8 rounded-xl flex flex-col items-center text-center max-w-xl mx-auto">
+            <CheckCircle size={48} className="mb-4 text-green-500 shrink-0" aria-hidden />
             <h3 className="text-xl font-bold">All CRDT States Synchronized</h3>
+            <p className="mt-4 text-sm leading-relaxed text-green-900/80">
+              This prototype is only the conflict desk — there is no separate “home” page to return to.
+              When the queue is empty, this is the normal screen.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-green-900/80">
+              Resolutions are saved in your browser (IndexedDB). After a refresh you should still see
+              this message until new conflicts appear — that means persistence is working.
+            </p>
           </div>
         ) : (
           <div className="space-y-6">
