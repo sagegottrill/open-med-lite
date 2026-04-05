@@ -1,116 +1,94 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, Database, Smartphone, CheckCircle } from 'lucide-react'
+import { NavLink, Route, Routes } from 'react-router-dom'
+import { ConflictResolver } from './components/ConflictResolver'
+import { PatientDashboard } from './components/PatientDashboard'
 import { initDB, type ConflictDoc } from './db'
+import { patientDb } from './db/localDatabase.js'
+import {
+  applyPouchWinner,
+  subscribePouchConflicts,
+  type PouchConflictPayload,
+} from './pouch/patientConflict'
+import { ConflictDeskPage, ConflictDeskBadge } from './pages/ConflictDeskPage'
+import type { PatientPouchDoc } from './types/patient'
 import type { RxDocument } from 'rxdb'
 
 export default function App() {
-  const [conflicts, setConflicts] = useState<ConflictDoc[]>([])
-  const [db, setDb] = useState<Awaited<ReturnType<typeof initDB>> | null>(null)
+  const [rxConflicts, setRxConflicts] = useState<ConflictDoc[]>([])
+  const [pouchConflict, setPouchConflict] = useState<PouchConflictPayload | null>(null)
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | undefined
-    let cancelled = false
-
-    void (async () => {
-      const database = await initDB()
-      if (cancelled) return
-      setDb(database)
-      sub = database.conflicts.find().$.subscribe(
-        (docs: RxDocument<ConflictDoc>[]) => {
-          setConflicts(docs.map((doc) => doc.toJSON() as ConflictDoc))
-        },
-      )
-    })()
-
-    return () => {
-      cancelled = true
-      sub?.unsubscribe()
-    }
+    void initDB().then((database) => {
+      sub = database.conflicts.find().$.subscribe((docs: RxDocument<ConflictDoc>[]) => {
+        setRxConflicts(docs.map((d) => d.toJSON() as ConflictDoc))
+      })
+    })
+    return () => sub?.unsubscribe()
   }, [])
 
-  const resolveConflict = async (id: string, resolution: 'local' | 'remote') => {
-    if (!db) return
-    console.log(`Resolved ${id} using ${resolution} data.`)
-    const query = db.conflicts.findOne({ selector: { id } })
-    await query.remove()
-  }
+  useEffect(() => {
+    return subscribePouchConflicts(patientDb, (payload) => {
+      if (payload.versions.length >= 2) {
+        setPouchConflict(payload)
+      }
+    })
+  }, [])
+
+  const showResolver =
+    pouchConflict !== null && pouchConflict.versions.length >= 2
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
-      <header className="mb-8 border-b pb-4 border-slate-200 flex justify-between items-center">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">OpenMed Lite</h1>
-          <p className="text-slate-500 mt-1">Offline-First Clinical Records</p>
+          <p className="mt-1 text-slate-500">Offline-First Clinical Records</p>
         </div>
-        {conflicts.length === 0 ? (
-          <div className="flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm">
-            <CheckCircle size={18} aria-hidden />
-            <span>Sync queue clear</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-medium text-sm">
-            <AlertTriangle size={18} aria-hidden />
-            <span>{conflicts.length} Pending Sync Conflicts</span>
-          </div>
-        )}
+        <ConflictDeskBadge count={rxConflicts.length} />
       </header>
 
-      <main className="max-w-5xl mx-auto">
-        <h2 className="text-xl font-semibold mb-6">Human-in-the-Loop Resolution Desk</h2>
-        {conflicts.length === 0 ? (
-          <div className="bg-green-50 border border-green-200 text-green-800 p-8 rounded-xl flex flex-col items-center text-center max-w-xl mx-auto">
-            <CheckCircle size={48} className="mb-4 text-green-500 shrink-0" aria-hidden />
-            <h3 className="text-xl font-bold">All CRDT States Synchronized</h3>
-            <p className="mt-4 text-sm leading-relaxed text-green-900/80">
-              This prototype is only the conflict desk — there is no separate “home” page to return to.
-              When the queue is empty, this is the normal screen.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-green-900/80">
-              Resolutions are saved in your browser (IndexedDB). After a refresh you should still see
-              this message until new conflicts appear — that means persistence is working.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {conflicts.map((conflict) => (
-              <div key={conflict.id} className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="bg-slate-100 px-6 py-4 border-b border-slate-200 flex justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg">{conflict.patientName} ({conflict.patientId})</h3>
-                    <p className="text-sm text-slate-500">Conflicting Field: <span className="font-semibold text-red-600">{conflict.field}</span></p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 divide-x divide-slate-200">
-                  <div className="p-6 bg-amber-50/30">
-                    <div className="flex items-center gap-2 mb-4 text-amber-700 font-semibold">
-                      <Smartphone size={20} />
-                      <h4>Local Clinic Node (Offline Entry)</h4>
-                    </div>
-                    <div className="p-4 bg-white border border-amber-200 rounded-lg shadow-inner mb-4">
-                      <p className="text-lg font-medium">{conflict.localValue}</p>
-                    </div>
-                    <button onClick={() => resolveConflict(conflict.id, 'local')} className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-medium">
-                      Keep Local Data
-                    </button>
-                  </div>
-                  <div className="p-6 bg-blue-50/30">
-                    <div className="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
-                      <Database size={20} />
-                      <h4>Main Hospital Server</h4>
-                    </div>
-                    <div className="p-4 bg-white border border-blue-200 rounded-lg shadow-inner mb-4">
-                      <p className="text-lg font-medium">{conflict.remoteValue}</p>
-                    </div>
-                    <button onClick={() => resolveConflict(conflict.id, 'remote')} className="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 py-2 rounded-lg font-medium">
-                      Overwrite with Server
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+      <nav className="mb-8 flex gap-6 text-sm font-medium">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            isActive
+              ? 'border-b-2 border-slate-900 pb-1 text-slate-900'
+              : 'text-slate-500 hover:text-slate-800'
+          }
+        >
+          Patients (PouchDB)
+        </NavLink>
+        <NavLink
+          to="/desk"
+          className={({ isActive }) =>
+            isActive
+              ? 'border-b-2 border-slate-900 pb-1 text-slate-900'
+              : 'text-slate-500 hover:text-slate-800'
+          }
+        >
+          Sync conflict desk (RxDB)
+        </NavLink>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<PatientDashboard onPouchConflict={setPouchConflict} />} />
+        <Route path="/desk" element={<ConflictDeskPage />} />
+      </Routes>
+
+      {showResolver ? (
+        <ConflictResolver
+          open
+          docId={pouchConflict!.docId}
+          versionA={pouchConflict!.versions[0]}
+          versionB={pouchConflict!.versions[1]}
+          onResolve={async (chosen) => {
+            await applyPouchWinner(patientDb, pouchConflict!.docId, chosen as PatientPouchDoc)
+          }}
+          onDismiss={() => setPouchConflict(null)}
+        />
+      ) : null}
     </div>
   )
 }
