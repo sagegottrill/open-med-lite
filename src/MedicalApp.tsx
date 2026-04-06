@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { ConflictResolver } from './components/ConflictResolver'
 import { PatientDashboard } from './components/PatientDashboard'
 import { initDB, type ConflictDoc } from './db'
@@ -39,6 +39,24 @@ export default function MedicalApp() {
 
   const showResolver =
     pouchConflict !== null && pouchConflict.versions.length >= 2
+
+  const body = useMemo(() => {
+    switch (location.pathname) {
+      case '/demo':
+      case '/officer-dashboard':
+        return <OfficerDemoDashboard />
+      case '/patients':
+        return <PatientDashboard onPouchConflict={setPouchConflict} />
+      case '/desk':
+        return <ConflictDeskPage />
+      default:
+        return (
+          <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-500">
+            Unknown route. Use the navigation above.
+          </div>
+        )
+    }
+  }, [location.pathname])
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
@@ -90,15 +108,7 @@ export default function MedicalApp() {
         </NavLink>
       </nav>
 
-      <Routes location={location}>
-        <Route path="/demo" element={<OfficerDemoDashboard />} />
-        <Route path="/officer-dashboard" element={<OfficerDemoDashboard />} />
-        <Route
-          path="/patients"
-          element={<PatientDashboard onPouchConflict={setPouchConflict} />}
-        />
-        <Route path="/desk" element={<ConflictDeskPage />} />
-      </Routes>
+      {body}
 
       {showResolver ? (
         <ConflictResolver
