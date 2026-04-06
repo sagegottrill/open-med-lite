@@ -10,6 +10,11 @@ export type PatientPouchDoc = {
   allergies: string
   notes: string
   updatedAt: string
+  seal?: {
+    alg: 'SHA-256'
+    hashHex: string
+    sealedAt: string
+  }
   _conflicts?: string[]
   _deleted?: boolean
 }

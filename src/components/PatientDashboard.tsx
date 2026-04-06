@@ -2,6 +2,7 @@ import { startTransition, useCallback, useEffect, useMemo, useState } from 'reac
 import { Loader2 } from 'lucide-react'
 import { patientDb, seedPatientsIfEmpty } from '../db/localDatabase.js'
 import type { PouchConflictPayload } from '../pouch/patientConflict'
+import { sealJson } from '../security/seal'
 import {
   emptyPatientForm,
   toPatientDoc,
@@ -110,6 +111,23 @@ export function PatientDashboard({ onPouchConflict }: Props) {
       resetForm()
       setLastVerifiedAt(new Date())
       setStatus('Committed to local registry.')
+
+      // Seal in the background so it never blocks input (best-effort).
+      void (async () => {
+        try {
+          const seal = await sealJson({
+            patientId: nextDoc.patientId,
+            patientName: nextDoc.patientName,
+            allergies: nextDoc.allergies,
+            notes: nextDoc.notes,
+            updatedAt: nextDoc.updatedAt,
+          })
+          const current = (await patientDb.get(nextDoc._id)) as PatientPouchDoc
+          await patientDb.put({ ...current, seal })
+        } catch {
+          // keep UX smooth; seal is optional in MVP
+        }
+      })()
     } catch (err: unknown) {
       const statusCode =
         err && typeof err === 'object' && 'status' in err
