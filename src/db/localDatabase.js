@@ -24,69 +24,77 @@ export async function ensurePatientIndexes() {
   }
 }
 
+/** Canonical demo rows (IndexedDB is per-origin: localhost ≠ production). */
+function buildDemoPatientDocs(now) {
+  const minutesAgo = (m) => new Date(now - m * 60_000).toISOString()
+  return [
+    {
+      _id: 'patient:OML-9904',
+      type: 'patient',
+      patientName: 'Amina Mustapha',
+      patientId: 'OML-9904',
+      allergies: 'Penicillin (Anaphylaxis)',
+      notes: 'Follow-up for malaria treatment. Monitor temperature and hydration.',
+      updatedAt: minutesAgo(6),
+    },
+    {
+      _id: 'patient:OML-7741',
+      type: 'patient',
+      patientName: 'Ibrahim Musa',
+      patientId: 'OML-7741',
+      allergies: 'None',
+      notes: 'Hypertension check. Refill amlodipine; counsel on salt intake.',
+      updatedAt: minutesAgo(14),
+    },
+    {
+      _id: 'patient:OML-5503',
+      type: 'patient',
+      patientName: 'Alma Bashir',
+      patientId: 'OML-5503',
+      allergies: 'Sulfa (Rash)',
+      notes: 'Postnatal visit. Assess bleeding; advise iron supplementation.',
+      updatedAt: minutesAgo(23),
+    },
+    {
+      _id: 'patient:OML-8824',
+      type: 'patient',
+      patientName: 'Sani Lawan',
+      patientId: 'OML-8824',
+      allergies: 'None',
+      notes: 'Diarrhea and dehydration. Start ORS; review in 24h.',
+      updatedAt: minutesAgo(37),
+    },
+    {
+      _id: 'patient:OML-6132',
+      type: 'patient',
+      patientName: 'Zainab Garba',
+      patientId: 'OML-6132',
+      allergies: 'Ibuprofen (Wheezing)',
+      notes: 'Asthma follow-up. Confirm inhaler technique; check triggers.',
+      updatedAt: minutesAgo(52),
+    },
+  ]
+}
+
 /**
- * Seed localized demo patients if the registry is empty.
+ * Ensure the five demo patients exist. Inserts any missing `_id` only — does not
+ * overwrite records you already edited (existing rev wins). Fixes the case where
+ * an older seed left a single row and skipped the bulk insert forever.
  * Safe to call on every boot.
  */
 export async function seedPatientsIfEmpty() {
   await ensurePatientIndexes()
-  const existing = await patientDb.find({
-    selector: { type: 'patient' },
-    limit: 1,
-  })
-  if (existing.docs.length > 0) return
-
   const now = Date.now()
-  const minutesAgo = (m) => new Date(now - m * 60_000).toISOString()
+  const demos = buildDemoPatientDocs(now)
 
-  await patientDb.bulkDocs(
-    [
-      {
-        _id: 'patient:OML-9904',
-        type: 'patient',
-        patientName: 'Amina Mustapha',
-        patientId: 'OML-9904',
-        allergies: 'Penicillin (Anaphylaxis)',
-        notes: 'Follow-up for malaria treatment. Monitor temperature and hydration.',
-        updatedAt: minutesAgo(6),
-      },
-      {
-        _id: 'patient:OML-7741',
-        type: 'patient',
-        patientName: 'Ibrahim Musa',
-        patientId: 'OML-7741',
-        allergies: 'None',
-        notes: 'Hypertension check. Refill amlodipine; counsel on salt intake.',
-        updatedAt: minutesAgo(14),
-      },
-      {
-        _id: 'patient:OML-5503',
-        type: 'patient',
-        patientName: 'Alma Bashir',
-        patientId: 'OML-5503',
-        allergies: 'Sulfa (Rash)',
-        notes: 'Postnatal visit. Assess bleeding; advise iron supplementation.',
-        updatedAt: minutesAgo(23),
-      },
-      {
-        _id: 'patient:OML-8824',
-        type: 'patient',
-        patientName: 'Sani Lawan',
-        patientId: 'OML-8824',
-        allergies: 'None',
-        notes: 'Diarrhea and dehydration. Start ORS; review in 24h.',
-        updatedAt: minutesAgo(37),
-      },
-      {
-        _id: 'patient:OML-6132',
-        type: 'patient',
-        patientName: 'Zainab Garba',
-        patientId: 'OML-6132',
-        allergies: 'Ibuprofen (Wheezing)',
-        notes: 'Asthma follow-up. Confirm inhaler technique; check triggers.',
-        updatedAt: minutesAgo(52),
-      },
-    ],
-    { new_edits: true },
-  )
+  for (const doc of demos) {
+    try {
+      await patientDb.get(doc._id)
+    } catch (err) {
+      const status = err && typeof err === 'object' && 'status' in err ? err.status : 0
+      if (status === 404) {
+        await patientDb.put(doc)
+      }
+    }
+  }
 }
