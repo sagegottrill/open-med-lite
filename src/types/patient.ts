@@ -1,4 +1,6 @@
 /** Patient document stored in PouchDB `openmed_patients`. */
+import { v4 as uuidv4 } from 'uuid'
+
 export type PatientPouchDoc = {
   _id: string
   _rev?: string
@@ -29,7 +31,11 @@ export function toPatientDoc(
     _rev?: string
   },
 ): PatientPouchDoc {
-  const _id = fields._id ?? `patient:${crypto.randomUUID()}`
+  const rand =
+    typeof globalThis.crypto?.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : uuidv4()
+  const _id = fields._id ?? `patient:${rand}`
   return {
     _id,
     _rev: fields._rev,
