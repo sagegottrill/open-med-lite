@@ -8,7 +8,6 @@ import {
   KeyRound,
   Stethoscope,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const OPENMED_LITE_REPO = 'https://github.com/sagegottrill/open-med-lite'
@@ -32,30 +31,8 @@ const marqueeItems = [
   'UMTH Stress-Tested',
 ]
 
-function useWatClock() {
-  const [time, setTime] = useState('')
-  useEffect(() => {
-    const tick = () => {
-      setTime(
-        new Intl.DateTimeFormat('en-GB', {
-          timeZone: 'Africa/Lagos',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        }).format(new Date()),
-      )
-    }
-    tick()
-    const id = window.setInterval(tick, 1000)
-    return () => window.clearInterval(id)
-  }, [])
-  return time
-}
-
 export default function LandingPage() {
   const navigate = useNavigate()
-  const wat = useWatClock()
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 90, damping: 20, mass: 0.2 })
 
@@ -75,7 +52,7 @@ export default function LandingPage() {
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
             <span className="font-medium text-slate-700">Phase 1 Architecture</span>
             <span aria-hidden>·</span>
-            <span className="tabular-nums">{wat || '—'} WAT</span>
+            <span className="font-medium text-slate-600">Status: Operational</span>
             <span aria-hidden>·</span>
             <span>Borno State</span>
           </div>
@@ -113,7 +90,7 @@ export default function LandingPage() {
                 onClick={() => navigate('/desk')}
                 className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-cyan-600"
               >
-                Admin login
+                Officer Login
               </button>
             </div>
           </div>
@@ -442,7 +419,7 @@ export default function LandingPage() {
               onClick={() => navigate('/desk')}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white px-5 py-3 font-semibold text-cyan-800 transition-colors hover:bg-cyan-50"
             >
-              Officer login
+              Officer Login
             </button>
           </div>
         </div>
@@ -464,7 +441,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-10 flex flex-col gap-2 border-t border-slate-200 pt-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>© {new Date().getFullYear()} Orivon Edge. All rights reserved.</span>
+            <span>© 2026 Orivon Edge. Released under MIT Open-Source License.</span>
             <span>Engineered for the Edge. Maiduguri, Borno State, Nigeria.</span>
           </div>
         </div>
