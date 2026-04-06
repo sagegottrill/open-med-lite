@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const GITHUB_PLACEHOLDER = 'https://github.com'
+const OPENMED_LITE_REPO = 'https://github.com/sagegottrill/open-med-lite'
 
 const container = {
   hidden: { opacity: 0, y: 16 },
@@ -156,7 +156,7 @@ export default function LandingPage() {
                 Access live demo <ArrowRight className="h-4 w-4" />
               </button>
               <a
-                href={GITHUB_PLACEHOLDER}
+                href={OPENMED_LITE_REPO}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
@@ -188,7 +188,7 @@ export default function LandingPage() {
               title: 'Repository',
               desc: 'Core CRDT schema, sync engine, and source.',
               icon: Database,
-              href: GITHUB_PLACEHOLDER,
+              href: OPENMED_LITE_REPO,
               cta: 'GitHub',
             },
             {
@@ -220,8 +220,14 @@ export default function LandingPage() {
             const className =
               'block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:bg-slate-50'
             if (c.href) {
+              const external = c.href.startsWith('http')
               return (
-                <a key={c.title} href={c.href} className={className}>
+                <a
+                  key={c.title}
+                  href={c.href}
+                  className={className}
+                  {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                >
                   {inner}
                 </a>
               )
@@ -424,7 +430,7 @@ export default function LandingPage() {
               Access live demo <ArrowRight className="h-4 w-4" />
             </button>
             <a
-              href={GITHUB_PLACEHOLDER}
+              href={OPENMED_LITE_REPO}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 transition-colors hover:bg-slate-50"
