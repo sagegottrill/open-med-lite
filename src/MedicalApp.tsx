@@ -88,7 +88,7 @@ export default function MedicalApp() {
               : 'text-slate-500 hover:text-slate-800'
           }
         >
-          Patients (PouchDB)
+          Patient Registry (Offline)
         </NavLink>
         <NavLink
           to="/desk"
@@ -98,13 +98,13 @@ export default function MedicalApp() {
               : 'text-slate-500 hover:text-slate-800'
           }
         >
-          Sync conflict desk (RxDB)
+          Conflict Resolution Desk
         </NavLink>
         <NavLink
           to="/"
-          className="text-slate-400 hover:text-slate-600"
+          className="ml-auto inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
         >
-          ← Landing
+          Landing
         </NavLink>
       </nav>
 

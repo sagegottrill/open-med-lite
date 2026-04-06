@@ -37,22 +37,11 @@ export function ConflictDeskPage() {
 
   return (
     <main className="max-w-5xl mx-auto">
-      <p className="mb-2 text-sm text-slate-500">
-        RxDB queue — operational sync conflicts (separate from Pouch patient merges).
-      </p>
       <h2 className="text-xl font-semibold mb-6">Human-in-the-Loop Resolution Desk</h2>
       {conflicts.length === 0 ? (
         <div className="bg-green-50 border border-green-200 text-green-800 p-8 rounded-xl flex flex-col items-center text-center max-w-xl mx-auto">
           <CheckCircle size={48} className="mb-4 text-green-500 shrink-0" aria-hidden />
           <h3 className="text-xl font-bold">All CRDT States Synchronized</h3>
-          <p className="mt-4 text-sm leading-relaxed text-green-900/80">
-            This prototype is only the conflict desk — there is no separate “home” page to return to.
-            When the queue is empty, this is the normal screen.
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-green-900/80">
-            Resolutions are saved in your browser (IndexedDB). After a refresh you should still see
-            this message until new conflicts appear — that means persistence is working.
-          </p>
         </div>
       ) : (
         <div className="space-y-6">

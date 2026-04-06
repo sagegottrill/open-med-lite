@@ -22,8 +22,8 @@ type MockConflict = {
 const INITIAL_QUEUE: MockConflict[] = [
   {
     id: 'qc-1',
-    patientId: 'OML-8824',
-    conflictType: 'Allergy Override',
+    patientId: 'ID-9904 (Amina M.)',
+    conflictType: 'Allergy: Penicillin',
     timestamp: '2 hours ago (Field Tablet B)',
     variant: 'penicillin',
   },
@@ -48,6 +48,7 @@ export default function OfficerDemoDashboard() {
   const [queue, setQueue] = useState<MockConflict[]>(INITIAL_QUEUE)
   const [selectedId, setSelectedId] = useState<string | null>(INITIAL_QUEUE[0]?.id ?? null)
   const [toast, setToast] = useState<string | null>(null)
+  const [seed, setSeed] = useState(4)
 
   const selected = queue.find((q) => q.id === selectedId) ?? null
 
@@ -71,6 +72,20 @@ export default function OfficerDemoDashboard() {
       }
       return next
     })
+  }
+
+  const simulateNewConflict = () => {
+    const id = `qc-${seed}`
+    setSeed((s) => s + 1)
+    const newConflict: MockConflict = {
+      id,
+      patientId: `OML-${String(8800 + seed).padStart(4, '0')}`,
+      conflictType: 'Allergy Override',
+      timestamp: 'Just now (Field Tablet B)',
+      variant: 'penicillin',
+    }
+    setQueue((prev) => [newConflict, ...prev])
+    setSelectedId(id)
   }
 
   const handleApproveMerge = () => {
@@ -176,10 +191,20 @@ export default function OfficerDemoDashboard() {
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-xl border border-emerald-200 bg-white px-6 py-12 text-center shadow-inner">
               <CheckCircle className="mb-4 h-16 w-16 text-emerald-600" aria-hidden />
               <h2 className="text-xl font-bold text-slate-900">Queue Clear</h2>
-              <p className="mt-2 max-w-md text-sm text-slate-600">
-                All local states synchronized. Automated merge was not applied to critical fields
-                without your review.
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">
+                <CheckCircle className="h-4 w-4 text-emerald-700" aria-hidden />
+                System Status: Nominal
+              </div>
+              <p className="mt-3 max-w-md text-sm text-slate-600">
+                All CRDT states synchronized.
               </p>
+              <button
+                type="button"
+                onClick={simulateNewConflict}
+                className="mt-5 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-slate-800"
+              >
+                Simulate New Conflict
+              </button>
             </div>
           ) : !selected ? (
             <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-500">
@@ -193,6 +218,10 @@ export default function OfficerDemoDashboard() {
             />
           )}
         </main>
+      </div>
+
+      <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+        Part of The Sahel Resilience Stack
       </div>
 
       {toast ? (
@@ -220,13 +249,13 @@ function ResolutionDesk({
   const pen = conflict.variant === 'penicillin'
 
   const masterLabel = pen
-    ? 'Current Record — Penicillin Allergy: NO'
+    ? 'Current Record - Penicillin Allergy: NO'
     : conflict.variant === 'dose'
       ? 'Current Record — Metformin: 500mg BID'
       : 'Current Record — DOB: 1988-03-12'
 
   const incomingLabel = pen
-    ? 'Incoming Update — Penicillin Allergy: YES (Severity: Anaphylaxis)'
+    ? 'Incoming Update - Penicillin Allergy: YES (Severity: Anaphylaxis)'
     : conflict.variant === 'dose'
       ? 'Incoming Update — Metformin: 1000mg BID'
       : 'Incoming Update — DOB: 1988-12-03'
