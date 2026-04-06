@@ -88,7 +88,7 @@ export default function MedicalApp() {
               : 'text-slate-500 hover:text-slate-800'
           }
         >
-          Patient Registry (Offline)
+          Patient Registry
         </NavLink>
         <NavLink
           to="/desk"
@@ -98,7 +98,7 @@ export default function MedicalApp() {
               : 'text-slate-500 hover:text-slate-800'
           }
         >
-          Conflict Resolution Desk
+          Conflict Resolution
         </NavLink>
         <NavLink
           to="/"

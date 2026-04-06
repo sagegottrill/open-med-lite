@@ -108,7 +108,7 @@ export function ConflictDeskBadge({ count }: { count: number }) {
     return (
       <div className="flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm">
         <CheckCircle size={18} aria-hidden />
-        <span>Sync queue clear</span>
+        <span>System Status: Nominal</span>
       </div>
     )
   }

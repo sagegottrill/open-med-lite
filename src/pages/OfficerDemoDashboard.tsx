@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertTriangle,
   CheckCircle,
@@ -22,7 +24,7 @@ type MockConflict = {
 const INITIAL_QUEUE: MockConflict[] = [
   {
     id: 'qc-1',
-    patientId: 'ID-9904 (Amina M.)',
+    patientId: 'OML-8824 (Amina M.)',
     conflictType: 'Allergy: Penicillin',
     timestamp: '2 hours ago (Field Tablet B)',
     variant: 'penicillin',
@@ -63,14 +65,16 @@ export default function OfficerDemoDashboard() {
   }, [])
 
   const removeFromQueue = (id: string) => {
-    setQueue((prev) => {
-      const next = prev.filter((c) => c.id !== id)
-      if (next.length === 0) {
-        setSelectedId(null)
-      } else if (selectedId === id) {
-        setSelectedId(next[0]?.id ?? null)
-      }
-      return next
+    startTransition(() => {
+      setQueue((prev) => {
+        const next = prev.filter((c) => c.id !== id)
+        if (next.length === 0) {
+          setSelectedId(null)
+        } else if (selectedId === id) {
+          setSelectedId(next[0]?.id ?? null)
+        }
+        return next
+      })
     })
   }
 
@@ -94,8 +98,8 @@ export default function OfficerDemoDashboard() {
     removeFromQueue(selected.id)
     showToast(
       isPenicillin
-        ? 'RxDB: Conflict resolved. Record cryptographically sealed and synced.'
-        : 'Conflict resolved. Record sealed and queued for sync.',
+        ? 'Conflict Resolved: Record OML-8824 Cryptographically Sealed.'
+        : 'Conflict Resolved: Record sealed and queued for sync.',
     )
   }
 
@@ -144,6 +148,17 @@ export default function OfficerDemoDashboard() {
         {/* PANE 2 */}
         <aside className="w-full border-b border-slate-200 bg-white lg:w-80 lg:shrink-0 lg:border-b-0 lg:border-r">
           <div className="sticky top-0 border-b border-slate-100 bg-slate-50 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <Link
+                to="/"
+                className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                Back to Suite
+              </Link>
+              <span className="text-[11px] font-medium text-slate-500">
+                Officer Console
+              </span>
+            </div>
             <div className="flex items-center gap-2 text-slate-800">
               <ClipboardList className="h-5 w-5 text-blue-900" aria-hidden />
               <h2 className="text-sm font-bold uppercase tracking-wide text-blue-950">
@@ -158,29 +173,38 @@ export default function OfficerDemoDashboard() {
                 No items in queue
               </li>
             ) : (
-              queue.map((c) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(c.id)}
-                    className={`flex w-full flex-col gap-1 rounded-lg border px-3 py-3 text-left transition active:scale-[0.99] ${
-                      selectedId === c.id
-                        ? 'border-blue-800 bg-blue-50 ring-1 ring-blue-200'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                    }`}
+              <AnimatePresence initial={false}>
+                {queue.map((c) => (
+                  <motion.li
+                    key={c.id}
+                    layout
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.18 }}
                   >
-                    <span className="font-mono text-sm font-bold text-slate-900">
-                      {c.patientId}
-                    </span>
-                    <span className="text-xs font-medium text-amber-800">{c.conflictType}</span>
-                    <span className="text-[11px] text-slate-500">{c.timestamp}</span>
-                    <span className="mt-1 flex items-center text-[11px] font-medium text-blue-800">
-                      Review
-                      <ChevronRight className="ml-0.5 h-3 w-3" aria-hidden />
-                    </span>
-                  </button>
-                </li>
-              ))
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(c.id)}
+                      className={`flex w-full flex-col gap-1 rounded-lg border px-3 py-3 text-left transition active:scale-[0.99] ${
+                        selectedId === c.id
+                          ? 'border-blue-800 bg-blue-50 ring-1 ring-blue-200'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="font-mono text-sm font-bold text-slate-900">
+                        {c.patientId}
+                      </span>
+                      <span className="text-xs font-medium text-amber-800">{c.conflictType}</span>
+                      <span className="text-[11px] text-slate-500">{c.timestamp}</span>
+                      <span className="mt-1 flex items-center text-[11px] font-medium text-blue-800">
+                        Review
+                        <ChevronRight className="ml-0.5 h-3 w-3" aria-hidden />
+                      </span>
+                    </button>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
             )}
           </ul>
         </aside>
@@ -190,14 +214,12 @@ export default function OfficerDemoDashboard() {
           {queue.length === 0 ? (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-xl border border-emerald-200 bg-white px-6 py-12 text-center shadow-inner">
               <CheckCircle className="mb-4 h-16 w-16 text-emerald-600" aria-hidden />
-              <h2 className="text-xl font-bold text-slate-900">Queue Clear</h2>
+              <h2 className="text-xl font-bold text-slate-900">All CRDT States Synchronized</h2>
               <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">
                 <CheckCircle className="h-4 w-4 text-emerald-700" aria-hidden />
                 System Status: Nominal
               </div>
-              <p className="mt-3 max-w-md text-sm text-slate-600">
-                All CRDT states synchronized.
-              </p>
+              <p className="mt-3 max-w-md text-sm text-slate-600">Queue clear.</p>
               <button
                 type="button"
                 onClick={simulateNewConflict}
@@ -247,6 +269,7 @@ function ResolutionDesk({
   onReject: () => void
 }) {
   const pen = conflict.variant === 'penicillin'
+  const selectedPatientId = useMemo(() => conflict.patientId ?? null, [conflict.patientId])
 
   const masterLabel = pen
     ? 'Current Record - Penicillin Allergy: NO'
@@ -319,6 +342,12 @@ function ResolutionDesk({
           Approve &amp; Merge
         </button>
       </div>
+
+      {selectedPatientId ? (
+        <p className="text-[11px] text-slate-500">
+          Action applies to <span className="font-mono font-semibold">{selectedPatientId}</span>.
+        </p>
+      ) : null}
     </div>
   )
 }
