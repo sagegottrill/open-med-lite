@@ -1,17 +1,17 @@
 # 🏥 OpenMed Lite (The Sahel Resilience Stack)
 
-> **Offline-first clinical record engine built strictly for last-mile rural clinics, mobile outposts, and off-grid communities.**
+> **Offline-first clinical record engine utilizing CRDTs, optimized for intermittent connectivity in extreme environments.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Status: Core Architecture Live](https://img.shields.io/badge/Status-Core_Architecture_Live-success.svg)]()
 [![Frontend: React/Vite](https://img.shields.io/badge/Frontend-React%2018-61DAFB.svg)]()
 
-OpenMed Lite is the clinical health module of **The Sahel Resilience Stack**. It is an open-source, offline-first Electronic Medical Record (EMR) engine designed specifically to bypass the centralized cloud and empower rural Primary Healthcare Centers (PHCs) and NGO mobile health workers.
+OpenMed Lite is the clinical health module of **The Sahel Resilience Stack**. It is an open-source, offline-first Electronic Medical Record (EMR) engine designed specifically for rural Primary Healthcare Centers (PHCs) and NGO mobile health workers operating in regions with severe telecommunication instability. 
 
-## 📖 The Manifesto: The Last-Mile Reality
-While engineering enterprise data systems for major urban facilities (like the UMTH Molecular Lab), I observed a fatal structural flaw: standard cloud-first medical architectures cannot survive the "last mile." When the regional power grid collapses, triage in rural clinics completely paralyzes. 
+## 📖 The Manifesto: From Enterprise to the Edge
+As detailed in our REDCap v16.0.6 deployment case study, the University of Maiduguri Teaching Hospital (UMTH) served as the foundational stress-test for this architecture. By engineering a local-first server environment, we secured 99.9% uptime for their molecular lab during regional network blackouts.
 
-**OpenMed Lite is NOT built for well-funded urban teaching hospitals.** It is a lightweight, edge-optimized engine built for infrastructure deserts. It decouples the clinical intake process from internet dependency, ensuring that a health worker in a displacement camp can continue treating patients even during a total telecommunications blackout.
+However, the heavy hardware required for enterprise hospital deployments cannot be sustained in off-grid rural clinics or by mobile NGO workers. OpenMed Lite is the evolution of the UMTH stress-test. It distills that enterprise-grade cryptographic security and offline resilience into a lightweight, CRDT-powered engine designed specifically for the last-mile.
 
 ## 🌍 Core System Capabilities
 
