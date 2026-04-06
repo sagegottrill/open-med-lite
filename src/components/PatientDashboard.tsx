@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import { patientDb, ensurePatientIndexes } from '../db/localDatabase.js'
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import { patientDb, seedPatientsIfEmpty } from '../db/localDatabase.js'
 import type { PouchConflictPayload } from '../pouch/patientConflict'
 import {
   emptyPatientForm,
@@ -18,16 +19,19 @@ export function PatientDashboard({ onPouchConflict }: Props) {
   const [editingId, setEditingId] = useState<string | undefined>(undefined)
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [lastVerifiedAt, setLastVerifiedAt] = useState<Date | null>(null)
 
   const loadPatients = useCallback(async () => {
     setLoading(true)
     try {
-      await ensurePatientIndexes()
+      await seedPatientsIfEmpty()
       const res = await patientDb.find({
         selector: { type: 'patient' },
         sort: [{ updatedAt: 'desc' }],
       })
       setPatients(res.docs as PatientPouchDoc[])
+      setLastVerifiedAt(new Date())
     } catch {
       const all = await patientDb.allDocs({ include_docs: true })
       const docs = all.rows
@@ -40,6 +44,7 @@ export function PatientDashboard({ onPouchConflict }: Props) {
         a.updatedAt < b.updatedAt ? 1 : -1,
       )
       setPatients(docs)
+      setLastVerifiedAt(new Date())
     } finally {
       setLoading(false)
     }
@@ -47,12 +52,17 @@ export function PatientDashboard({ onPouchConflict }: Props) {
 
   useEffect(() => {
     void loadPatients()
-    const changes = patientDb
-      .changes({ since: 'now', live: true })
-      .on('change', () => {
+    // Avoid re-querying on every tiny change (keeps INP low)
+    let scheduled = 0
+    const changes = patientDb.changes({ since: 'now', live: true }).on('change', () => {
+      if (scheduled) return
+      scheduled = window.setTimeout(() => {
+        scheduled = 0
         void loadPatients()
-      })
+      }, 150)
+    })
     return () => {
+      if (scheduled) window.clearTimeout(scheduled)
       void changes.cancel()
     }
   }, [loadPatients])
@@ -81,16 +91,25 @@ export function PatientDashboard({ onPouchConflict }: Props) {
   const savePatient = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus(null)
+    setSyncing(true)
     const doc = toPatientDoc({
       ...form,
       _id: editingId,
       _rev: editingRev,
     })
     try {
-      await patientDb.put(doc)
+      const res = await patientDb.put(doc)
+      // Update UI immediately without a full refetch (keeps event handlers snappy)
+      const nextDoc: PatientPouchDoc = { ...(doc as PatientPouchDoc), _rev: res.rev }
+      startTransition(() => {
+        setPatients((prev) => {
+          const without = prev.filter((p) => p._id !== nextDoc._id)
+          return [nextDoc, ...without]
+        })
+      })
       resetForm()
-      await loadPatients()
-      setStatus('Saved to local PouchDB (IndexedDB).')
+      setLastVerifiedAt(new Date())
+      setStatus('Committed to local registry.')
     } catch (err: unknown) {
       const statusCode =
         err && typeof err === 'object' && 'status' in err
@@ -113,17 +132,34 @@ export function PatientDashboard({ onPouchConflict }: Props) {
       } else {
         setStatus(err instanceof Error ? err.message : 'Save failed')
       }
+    } finally {
+      setSyncing(false)
     }
   }
+
+  const lastVerifiedLabel = useMemo(() => {
+    if (!lastVerifiedAt) return 'Local State: Verifying…'
+    const diff = Math.max(0, Date.now() - lastVerifiedAt.getTime())
+    const mins = Math.floor(diff / 60_000)
+    if (mins <= 0) return 'Local State: Verified just now'
+    return `Local State: Verified ${mins}m ago`
+  }, [lastVerifiedAt])
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Patient record</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Creates and updates persist to <code className="text-xs">openmed_patients</code> via{' '}
-          <code className="text-xs">db.put()</code>.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Clinical Entry</h2>
+            <p className="mt-1 text-sm text-slate-500">Offline-first registry update.</p>
+          </div>
+          {syncing ? (
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Syncing to Local Cache…
+            </div>
+          ) : null}
+        </div>
         <form className="mt-4 space-y-4" onSubmit={(e) => void savePatient(e)}>
           <div>
             <label className="block text-sm font-medium text-slate-700" htmlFor="pn">
@@ -178,9 +214,10 @@ export function PatientDashboard({ onPouchConflict }: Props) {
           <div className="flex gap-2">
             <button
               type="submit"
+              disabled={syncing}
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
             >
-              {editingId ? 'Update patient' : 'Save patient'}
+              Commit to Local Registry
             </button>
             {editingId ? (
               <button
@@ -196,10 +233,12 @@ export function PatientDashboard({ onPouchConflict }: Props) {
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Local patient list</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Loaded with <code className="text-xs">db.find()</code> / <code className="text-xs">allDocs</code>.
-        </p>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Recent Clinical Admissions</h2>
+            <p className="mt-1 text-sm text-slate-500">{lastVerifiedLabel}</p>
+          </div>
+        </div>
         {loading ? (
           <p className="mt-4 text-sm text-slate-500">Loading…</p>
         ) : patients.length === 0 ? (
