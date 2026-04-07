@@ -23,12 +23,13 @@ const fadeUp = {
 }
 
 const marqueeItems = [
-  'Deterministic CRDT Sync',
-  'Human-in-the-Loop Resolution',
-  'Zero-Bandwidth UI',
+  'The Sahel Resilience Stack',
+  'Open Medical Record Lite',
+  'CRDTs (RxDB / Yjs)',
+  'Human-in-the-Loop conflict resolution desk',
+  'Last-Write-Wins risk containment',
+  'MIT Open-Source License',
   'AES-256 Encryption',
-  'RxDB / Yjs Powered',
-  'UMTH Stress-Tested',
 ]
 
 export default function LandingPage() {
@@ -46,8 +47,9 @@ export default function LandingPage() {
       <div className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-6 py-3">
           <div className="text-xs tracking-wide text-slate-600">
-            Open-source clinical infrastructure · Sahel Resilience Stack ·{' '}
-            <span className="text-cyan-700">Last-Mile Clinics</span>
+            <span className="font-semibold text-slate-800">The Sahel Resilience Stack</span>
+            {' · '}
+            Open Medical Record Lite (OpenMed Lite) · <span className="text-cyan-700">Last-mile clinics</span>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
             <span className="font-medium text-slate-700">Phase 1 Architecture</span>
@@ -59,7 +61,9 @@ export default function LandingPage() {
         </div>
         <div className="border-t border-slate-100">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-3">
-            <div className="text-lg font-semibold tracking-tight text-slate-900">OpenMed Lite</div>
+            <div className="text-lg font-semibold tracking-tight text-slate-900">
+              OpenMed Lite <span className="text-sm font-normal text-slate-500">— Open Medical Record Lite</span>
+            </div>
             <nav className="hidden flex-1 justify-center gap-8 text-sm text-slate-700 md:flex">
               <a href="#challenge" className="transition-colors hover:text-slate-900">
                 Challenge
@@ -109,20 +113,21 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm"
             >
               <Stethoscope className="h-3.5 w-3.5 text-cyan-700" />
-              Offline clinical engine · Health &amp; infrastructure
+              Open Medical Record Lite · The Sahel Resilience Stack
             </motion.div>
             <motion.h1
               variants={fadeUp}
               className="mt-6 text-4xl font-semibold leading-tight md:text-6xl"
             >
-              The Clinical Engine for the <span className="text-cyan-700">Last Mile</span>.
+              <span className="text-cyan-700">Open Medical Record Lite</span> for the last mile.
             </motion.h1>
             <motion.p
               variants={fadeUp}
               className="mt-5 text-base leading-relaxed text-slate-600 md:text-lg"
             >
-              An offline-first Electronic Medical Record (EMR) blueprint utilizing CRDTs. Built to ensure off-grid rural
-              clinics and mobile health workers never lose a single patient record when the power grid fails.
+              OpenMed Lite is the offline-first Open Medical Record Lite module of The Sahel Resilience Stack, using CRDTs
+              (RxDB / Yjs) and a human-in-the-loop conflict resolution desk so critical fields never collapse into dangerous
+              Last-Write-Wins merges. Designed for off-grid clinical continuity.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
@@ -162,22 +167,22 @@ export default function LandingPage() {
               cta: 'Open console',
             },
             {
-              title: 'Repository',
-              desc: 'Core CRDT schema, sync engine, and source.',
+              title: 'Repository (MIT)',
+              desc: 'CRDTs (RxDB / Yjs), sync engine, and source under the MIT Open-Source License.',
               icon: Database,
               href: OPENMED_LITE_REPO,
               cta: 'GitHub',
             },
             {
               title: 'Architecture',
-              desc: 'Read, write, sync — offline by design.',
+              desc: 'Offline-first capture; CRDT merge; officer desk for contested fields.',
               icon: ShieldCheck,
               href: '#architecture',
               cta: 'How it works',
             },
             {
               title: 'Officer access',
-              desc: 'Secure dashboard for conflict resolution.',
+              desc: 'Human-in-the-loop conflict resolution desk (secure officer login).',
               icon: KeyRound,
               action: () => navigate('/desk'),
               cta: 'Sign in',
@@ -253,10 +258,11 @@ export default function LandingPage() {
               Enterprise software paralyzes rural triage.
             </h2>
             <p className="mt-4 leading-relaxed text-slate-600">
-              As proven in our UMTH deployment, enterprise-grade data architecture is critical for regional hubs. But those
-              heavy architectures fail in the last mile. When the regional grid collapses, mobile health workers and rural
-              Primary Healthcare Centers (PHCs) are left blind. OpenMed Lite decouples the clinical intake process from
-              internet dependency entirely.
+              As proven in our UMTH deployment, enterprise-grade data architecture is critical for regional hubs—but those
+              heavy stacks fail in the last mile. When the regional grid collapses, mobile health workers and rural Primary
+              Healthcare Centers (PHCs) are left blind. <strong className="font-semibold text-slate-800">OpenMed Lite</strong> (Open Medical Record Lite) decouples clinical intake from internet
+              dependency and replaces naive cloud sync with <strong className="font-semibold text-slate-800">CRDTs (RxDB / Yjs)</strong> plus a{' '}
+              <strong className="font-semibold text-slate-800">human-in-the-loop conflict resolution desk</strong> to contain Last-Write-Wins medical risk.
             </p>
           </div>
           <div className="space-y-4 lg:col-span-7">
@@ -266,8 +272,8 @@ export default function LandingPage() {
                 d: 'Standard EMRs freeze when telecommunications drop, halting triage.',
               },
               {
-                m: 'The "Last-Write" Flaw',
-                d: 'Standard cloud syncing blindly overwrites critical medical data based on timestamps.',
+                m: 'The Last-Write-Wins flaw',
+                d: 'Timestamp-tied merges can silently overwrite allergies, vitals, or directives—fatal in triage unless CRDTs and a human desk intervene.',
               },
               {
                 m: 'Hardware Drain',
@@ -295,16 +301,16 @@ export default function LandingPage() {
           <div className="text-xs font-semibold uppercase tracking-wider text-cyan-700">Technical architecture</div>
           <h2 className="mt-3 text-3xl font-semibold">Asynchronous triage. Offline by design.</h2>
           <p className="mt-4 max-w-3xl leading-relaxed text-slate-600">
-            OpenMed Lite distills enterprise-grade cryptographic security into a lightweight, CRDT-powered engine. A mobile
-            health worker can collect data on a tablet in the field all day, and the state will asynchronously synchronize
-            with the master PostgreSQL database only when they return to a zone with broadband.
+            OpenMed Lite distills enterprise-grade cryptographic security into a lightweight engine powered by{' '}
+            <strong className="font-semibold text-slate-800">CRDTs (RxDB / Yjs)</strong>. A mobile health worker can collect data on a tablet in the field all day; contested clinical fields route to the{' '}
+            <strong className="font-semibold text-slate-800">human-in-the-loop conflict resolution desk</strong> instead of defaulting to Last-Write-Wins. Clean merges then synchronize asynchronously to PostgreSQL when broadband returns.
           </p>
 
           <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:grid-cols-12">
             <div className="lg:col-span-4 lg:sticky lg:top-24">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                 <div className="space-y-2">
-                  {['Local State Capture', 'Deterministic CRDTs', 'Human-in-the-Loop Resolution'].map((t) => (
+                  {['Local state capture', 'CRDTs (RxDB / Yjs)', 'Human-in-the-loop conflict resolution desk'].map((t) => (
                     <div
                       key={t}
                       className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2"
@@ -325,13 +331,13 @@ export default function LandingPage() {
                 },
                 {
                   n: '02',
-                  t: 'Deterministic CRDTs',
-                  d: 'RxDB and Yjs manage complex data mutations locally. Mathematical conflict-free replicated data types ensure the data structure remains immutable until network connection is restored.',
+                  t: 'CRDTs (RxDB / Yjs)',
+                  d: 'RxDB and Yjs manage complex mutations locally with deterministic CRDT semantics—structuring convergence without silently picking arbitrary timestamps on safety-critical fields.',
                 },
                 {
                   n: '03',
-                  t: 'Human-in-the-Loop Resolution',
-                  d: 'In medical contexts, blindly trusting a "Last-Write-Wins" timestamp can be fatal (e.g., overwriting a penicillin allergy). OpenMed Lite halts automated merges on critical fields, routing encrypted conflicts to a Clinical Officer for manual verification.',
+                  t: 'Human-in-the-loop conflict resolution desk',
+                  d: 'Blind Last-Write-Wins can be fatal (e.g., overwriting a penicillin allergy). OpenMed Lite halts automated merges on critical fields, routing encrypted conflicts to the officer desk for verification before any authoritative merge.',
                 },
               ].map((s) => (
                 <motion.div
@@ -356,8 +362,9 @@ export default function LandingPage() {
         <div className="text-xs font-semibold uppercase tracking-wider text-cyan-700">Core capabilities</div>
         <h2 className="mt-3 text-3xl font-semibold">Data sovereignty for vulnerable populations.</h2>
         <p className="mt-4 max-w-3xl leading-relaxed text-slate-600">
-          Handling sensitive demographic and epidemiological data requires strict &quot;Privacy by Design.&quot; This architecture
-          ensures NDPR and HIPAA alignment while keeping the UI accessible for low-resource hardware.
+          Handling sensitive demographic and epidemiological data requires strict &quot;Privacy by Design.&quot; This Open Medical
+          Record Lite architecture aligns with NDPR and HIPAA expectations while keeping the UI accessible for low-resource
+          hardware. Engineered by Orivon Edge to ensure regional health sovereignty.
         </p>
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
@@ -394,9 +401,12 @@ export default function LandingPage() {
           <div>
             <div className="text-sm text-slate-600">Explore the stack — demo, code, or secure access</div>
             <div className="mt-1 text-2xl font-semibold md:text-3xl">
-              The live demo utilizes simulated offline states to demonstrate the &quot;Human-in-the-Loop&quot; conflict resolution
-              dashboard.
+              The live demo simulates offline capture, CRDT divergence, and the human-in-the-loop conflict resolution desk—so reviewers see how we avoid Last-Write-Wins on critical fields.
             </div>
+            <p className="mt-3 max-w-2xl text-xs text-slate-600">
+              Repository and reference UI are released under the <strong className="font-medium text-slate-800">MIT Open-Source License</strong>.{' '}
+              Proprietary state and clinical datasets remain securely partitioned in private, on-premise infrastructure.
+            </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
@@ -430,19 +440,32 @@ export default function LandingPage() {
           <div className="flex flex-col gap-8 md:flex-row md:justify-between">
             <div>
               <div className="text-lg font-semibold">OpenMed Lite</div>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-cyan-800">Open Medical Record Lite</p>
               <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600">
-                Offline-first clinical record engine built strictly for last-mile rural clinics, mobile outposts, and
-                off-grid communities.
+                Module of <strong className="font-medium text-slate-800">The Sahel Resilience Stack</strong>—offline-first Open Medical Record Lite with CRDTs (RxDB / Yjs) and a human-in-the-loop conflict resolution desk for contested clinical fields.
+              </p>
+              <p className="mt-3 max-w-md text-xs font-semibold text-slate-800">
+                MIT Open-Source License <span className="font-normal text-slate-600">(public repository)</span>
               </p>
             </div>
             <div className="text-sm text-slate-600">
               <div className="font-medium text-slate-800">Initiative</div>
               <div className="mt-1">Orivon Edge</div>
+              <div className="mt-3 font-medium text-slate-800">Local maintainers</div>
+              <div className="mt-1 max-w-md text-sm leading-relaxed text-slate-600">
+                Orivon Edge Engineering Core &amp; Regional Clinical Officers
+              </div>
             </div>
           </div>
+          <div className="mt-8 rounded-xl border border-cyan-200 bg-cyan-50/40 px-4 py-3 text-xs leading-relaxed text-slate-700">
+            <strong className="font-semibold text-slate-900">Data partitioning:</strong> Proprietary state and clinical datasets
+            remain securely partitioned in private, on-premise infrastructure—the open codebase does not ship production PHI.
+          </div>
           <div className="mt-10 flex flex-col gap-2 border-t border-slate-200 pt-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>© 2026 Orivon Edge. Released under MIT Open-Source License.</span>
-            <span>Engineered for the Edge. Maiduguri, Borno State, Nigeria.</span>
+            <span>
+              © {new Date().getFullYear()} Orivon Edge. <strong className="font-medium text-slate-700">MIT Open-Source License.</strong>
+            </span>
+            <span>Engineered for the edge. Maiduguri, Borno State, Nigeria.</span>
           </div>
         </div>
       </footer>
