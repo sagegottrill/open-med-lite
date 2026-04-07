@@ -6,6 +6,8 @@
 [![Status: Core Architecture Live](https://img.shields.io/badge/Status-Core_Architecture_Live-success.svg)]()
 [![Frontend: React/Vite](https://img.shields.io/badge/Frontend-React%2018-61DAFB.svg)]()
 
+**🔴 [Access the Live Clinical Engine Demo Here](https://open-med-lite.vercel.app/)** *(Note for Reviewers: The live deployment utilizes simulated offline states to securely demonstrate the "Human-in-the-Loop" conflict resolution dashboard without exposing actual clinical data).*
+
 OpenMed Lite is the clinical health module of **The Sahel Resilience Stack**. It is an open-source, offline-first Electronic Medical Record (EMR) engine designed specifically for rural Primary Healthcare Centers (PHCs) and NGO mobile health workers operating in regions with severe telecommunication instability. 
 
 ## 📖 The Manifesto: From Enterprise to the Edge
@@ -36,11 +38,25 @@ Handling sensitive demographic and epidemiological data for vulnerable populatio
 ## 🤝 Open Source Governance & Contributing
 OpenMed Lite is classified as a **Digital Public Good**. It is engineered by the **Orivon Edge Youth Guild** operating within Borno State, aiming to provide digital sovereignty to local, last-mile healthcare infrastructure.
 
+We actively welcome contributions from global developers, health informaticians, and security researchers.
+
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/RuralClinicModule`)
 3. Commit your Changes (`git commit -m 'Add RuralClinicModule'`)
 4. Push to the Branch (`git push origin feature/RuralClinicModule`)
 5. Open a Pull Request
 
----
-*Engineered for the Edge. Maiduguri, Borno State, Nigeria.*
+## 🚀 Local Deployment Protocol
+
+```bash
+# 1. Clone the repository
+git clone [https://github.com/sagegottrill/open-med-lite.git](https://github.com/sagegottrill/open-med-lite.git)
+
+# 2. Navigate to the workspace
+cd open-med-lite
+
+# 3. Install system dependencies
+npm install
+
+# 4. Initialize the offline-first clinical engine
+npm run dev
